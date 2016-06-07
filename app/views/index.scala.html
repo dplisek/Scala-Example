@@ -1,7 +1,26 @@
-@(message: String)
+@import model.TranslationId
+@(translations: Iterable[TranslationId])
 
-@main("Welcome to Play") {
+@main("List of translations") {
 
-    @play20.welcome(message)
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Text</th>
+                <th>Language</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for(t <- translations) {
+                <tr>
+                    <td>@t.code</td>
+                    <td>@t.text</td>
+                    <td>@t.language</td>
+                    <td><a href="@routes.Application.edit(t.id)">Edit</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
 }

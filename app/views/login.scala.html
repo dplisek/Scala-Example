@@ -1,0 +1,19 @@
+@import model.User
+@(loginForm: Form[User])(implicit messages: Messages)
+
+@main("Log in") {
+
+    @helper.form(action = routes.Auth.login()) {
+        @helper.inputText(loginForm("username"))
+        @helper.inputPassword(loginForm("password"))
+        <input type="submit" value="Log in"/>
+        @if(loginForm.hasGlobalErrors) {
+            <ul>
+            @for(error <- loginForm.globalErrors) {
+                <li>@Messages(error.messages, error.args)</li>
+            }
+            </ul>
+        }
+    }
+
+}

@@ -1,0 +1,6 @@
+@import model.Translation
+@(translationForm: Form[Translation])(implicit messages: Messages)
+
+@helper.inputText(translationForm("code"))
+@helper.textarea(translationForm("text"))
+@helper.inputText(translationForm("language"))

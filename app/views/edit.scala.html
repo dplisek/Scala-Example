@@ -1,0 +1,11 @@
+@import model.Translation
+@(translationForm: Form[Translation], constantId: Long)(implicit messages: Messages)
+
+@main("Edit a translation") {
+
+    @helper.form(action = routes.Application.update(constantId)) {
+        @form(translationForm)
+        <input type="submit" value="Update"/>
+    }
+
+}
