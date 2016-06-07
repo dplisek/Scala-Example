@@ -1,7 +1,7 @@
 @import model.Translation
 @(translationForm: Form[Translation])(implicit messages: Messages)
 
-@main("Create a translation") {
+@main("Create a translation", "create") {
 
     @helper.form(action = routes.Application.save()) {
         @form(translationForm)

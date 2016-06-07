@@ -77,12 +77,12 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
   }
 
   def selectVersion(version: Long) = withAuth { user => implicit request =>
-    Redirect(routes.Application.index()).withSession(resourceVersionService.sessionWithResourceVersion(request.session, version))
+    Redirect(routes.Application.history()).withSession(resourceVersionService.sessionWithResourceVersion(request.session, version))
   }
 
   def revertTo(version: Long) = withAuth { user => implicit request =>
     val newVersion = resourceVersionService.copyCurrentResourcesAsNewVersion(request.session, Option(version))
-    Redirect(routes.Application.index()).withSession(resourceVersionService.sessionWithResourceVersion(request.session, newVersion))
+    Redirect(routes.Application.history()).withSession(resourceVersionService.sessionWithResourceVersion(request.session, newVersion))
   }
 }
 

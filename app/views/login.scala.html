@@ -1,7 +1,7 @@
 @import model.User
 @(loginForm: Form[User])(implicit messages: Messages)
 
-@main("Log in") {
+@main("Log in", "login") {
 
     @helper.form(action = routes.Auth.login()) {
         @helper.inputText(loginForm("username"))
