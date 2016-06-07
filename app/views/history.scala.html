@@ -1,0 +1,10 @@
+@(historyForm: Form[Long], maxVersion: Long)(implicit messages: Messages)
+
+@main("Version history") {
+
+    @helper.form(action = routes.Application.selectVersion()) {
+        @helper.select(historyForm("version"), options = Seq.range(1, maxVersion + 1).map(nr => nr.toString -> nr.toString))
+        <input type="submit" value="Switch version"/>
+    }
+
+}

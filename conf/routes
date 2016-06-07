@@ -8,6 +8,8 @@ POST    /save                       controllers.Application.save
 GET     /edit/:id                   controllers.Application.edit(id: Long)
 POST    /update/:constantId         controllers.Application.update(constantId: Long)
 GET     /delete/:constantId         controllers.Application.delete(constantId: Long)
+GET     /history                    controllers.Application.history
+POST    /history                    controllers.Application.selectVersion
 GET     /auth                       controllers.Auth.index
 POST    /auth/login                 controllers.Auth.login
 

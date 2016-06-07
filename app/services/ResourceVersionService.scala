@@ -11,6 +11,8 @@ class ResourceVersionService {
 
   def selectedResourceVersion(session: Session) = session.get("selectedResourceVersion").fold(Option.empty[Long]) {version => Option(version.toLong)}
 
+  def sessionWithResourceVersion(session: Session, version: Long) = session + ("selectedResourceVersion" -> version.toString)
+
   def copyCurrentResourcesAsNewVersion(session: Session) = {
     this.synchronized {
       val translations: Iterable[TranslationId] = TranslationRepository.findByResourceVersion(TranslationRepository.findLatestResourceVersion(selectedResourceVersion(session)))

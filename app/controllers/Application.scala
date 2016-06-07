@@ -7,6 +7,7 @@ import play.api.data.Forms._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{AnyContent, Request, Result, _}
 import services.ResourceVersionService
+import play.api.data.format.Formats._
 
 
 class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionService: ResourceVersionService) extends Controller with I18nSupport with Secured {
@@ -17,6 +18,10 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
       "text" -> nonEmptyText,
       "language" -> nonEmptyText
     ) (Translation.apply) (Translation.unapply)
+  )
+
+  val historyForm = Form(
+    "version" -> of[Long]
   )
 
   def index = withAuth { user => implicit request =>
@@ -34,7 +39,7 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
       translation => {
         val newVersion = resourceVersionService.copyCurrentResourcesAsNewVersion(request.session)
         TranslationRepository.add(translation, newVersion)
-        Redirect(routes.Application.index())
+        Redirect(routes.Application.index()).withSession(resourceVersionService.sessionWithResourceVersion(request.session, newVersion))
       }
     )
   }
@@ -52,7 +57,7 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
         val existingTranslation = TranslationRepository.findByConstantIdAndResourceVersion(constantId, newVersion)
         existingTranslation.fold(BadRequest("Cannot find translation to update.")) { t =>
           TranslationRepository.update(t, translation)
-          Redirect(routes.Application.index())
+          Redirect(routes.Application.index()).withSession(resourceVersionService.sessionWithResourceVersion(request.session, newVersion))
         }
       }
     )
@@ -66,9 +71,20 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
       val existingTranslation = TranslationRepository.findByConstantIdAndResourceVersion(constantId, newVersion)
       existingTranslation.fold(BadRequest("Cannot find translation to delete.")) { t =>
         TranslationRepository.delete(t)
-        Redirect(routes.Application.index())
+        Redirect(routes.Application.index()).withSession(resourceVersionService.sessionWithResourceVersion(request.session, newVersion))
       }
     }
+  }
+
+  def history = withAuth { user => implicit request =>
+    Ok(views.html.history(historyForm.fill(resourceVersionService.selectedResourceVersion(request.session).getOrElse(resourceVersionService.currentVersion)), resourceVersionService.currentVersion))
+  }
+
+  def selectVersion = withAuth { user => implicit request =>
+    historyForm.bindFromRequest.fold(
+      errors => BadRequest(views.html.history(errors, resourceVersionService.currentVersion)),
+      version => Redirect(routes.Application.index()).withSession(resourceVersionService.sessionWithResourceVersion(request.session, version))
+    )
   }
 }
 
