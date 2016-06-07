@@ -9,7 +9,8 @@ GET     /edit/:id                   controllers.Application.edit(id: Long)
 POST    /update/:constantId         controllers.Application.update(constantId: Long)
 GET     /delete/:constantId         controllers.Application.delete(constantId: Long)
 GET     /history                    controllers.Application.history
-POST    /history                    controllers.Application.selectVersion
+GET     /history/:version           controllers.Application.selectVersion(version: Long)
+GET     /history/revert_to/:version controllers.Application.revertTo(version: Long)
 GET     /auth                       controllers.Auth.index
 POST    /auth/login                 controllers.Auth.login
 GET     /auth/logout                controllers.Auth.logout

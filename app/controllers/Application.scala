@@ -20,10 +20,6 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
     ) (Translation.apply) (Translation.unapply)
   )
 
-  val historyForm = Form(
-    "version" -> of[Long]
-  )
-
   def index = withAuth { user => implicit request =>
     val translations = TranslationRepository.findByResourceVersion(TranslationRepository.findLatestResourceVersion(resourceVersionService.selectedResourceVersion(request.session)))
     Ok(views.html.index(translations))
@@ -77,14 +73,16 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
   }
 
   def history = withAuth { user => implicit request =>
-    Ok(views.html.history(historyForm.fill(resourceVersionService.selectedResourceVersion(request.session).getOrElse(resourceVersionService.currentVersion)), resourceVersionService.currentVersion))
+    Ok(views.html.history(resourceVersionService.selectedResourceVersion(request.session).getOrElse(resourceVersionService.currentVersion), resourceVersionService.currentVersion))
   }
 
-  def selectVersion = withAuth { user => implicit request =>
-    historyForm.bindFromRequest.fold(
-      errors => BadRequest(views.html.history(errors, resourceVersionService.currentVersion)),
-      version => Redirect(routes.Application.index()).withSession(resourceVersionService.sessionWithResourceVersion(request.session, version))
-    )
+  def selectVersion(version: Long) = withAuth { user => implicit request =>
+    Redirect(routes.Application.index()).withSession(resourceVersionService.sessionWithResourceVersion(request.session, version))
+  }
+
+  def revertTo(version: Long) = withAuth { user => implicit request =>
+    val newVersion = resourceVersionService.copyCurrentResourcesAsNewVersion(request.session, Option(version))
+    Redirect(routes.Application.index()).withSession(resourceVersionService.sessionWithResourceVersion(request.session, newVersion))
   }
 }
 
