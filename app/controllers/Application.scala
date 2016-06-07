@@ -57,6 +57,19 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
       }
     )
   }
+
+  def delete(constantId: Long) = withAuth { user => implicit request =>
+    if (TranslationRepository.findByResourceVersion(TranslationRepository.findLatestResourceVersion(resourceVersionService.selectedResourceVersion(request.session))).size == 1) {
+      BadRequest("Cannot delete last one.")
+    } else {
+      val newVersion = resourceVersionService.copyCurrentResourcesAsNewVersion(request.session)
+      val existingTranslation = TranslationRepository.findByConstantIdAndResourceVersion(constantId, newVersion)
+      existingTranslation.fold(BadRequest("Cannot find translation to delete.")) { t =>
+        TranslationRepository.delete(t)
+        Redirect(routes.Application.index())
+      }
+    }
+  }
 }
 
 trait Secured {

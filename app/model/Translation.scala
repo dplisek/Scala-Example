@@ -41,4 +41,8 @@ object TranslationRepository {
     val newTranslation = new TranslationId(old.id, old.constantId, old.resourceVersion, updated)
     translations += (newTranslation.id -> newTranslation)
   }
+
+  def delete(t: TranslationId) {
+    translations -= t.id
+  }
 }
