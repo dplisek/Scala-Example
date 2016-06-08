@@ -1,0 +1,29 @@
+@import model.LanguageId
+@(languages: Iterable[LanguageId])
+
+@main("List of languages", "languages") {
+
+    <table style="width:100%; border-spacing:0;">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for(l <- languages) {
+                <tr>
+                    <td>@l.code</td>
+                    <td>@l.name</td>
+                    <td><a href="@routes.LanguageController.edit(l.id)">Edit</a></td>
+                    <td><a href="@routes.LanguageController.delete(l.id)">Delete</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <a href="@routes.LanguageController.create()">Create a language</a>
+
+}

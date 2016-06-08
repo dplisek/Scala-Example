@@ -8,13 +8,23 @@ POST    /save                       controllers.Application.save
 GET     /edit/:id                   controllers.Application.edit(id: Long)
 POST    /update/:constantId         controllers.Application.update(constantId: Long)
 GET     /delete/:constantId         controllers.Application.delete(constantId: Long)
+
 GET     /history                    controllers.Application.history
 GET     /history/:version           controllers.Application.selectVersion(version: Long)
 GET     /history/revert_to/:version controllers.Application.revertTo(version: Long)
+
 GET     /export                     controllers.Application.export()
 POST    /export/json                controllers.Application.exportJson()
+
 GET     /import                     controllers.Application.importFile()
 POST    /import/json                controllers.Application.importJson()
+
+GET     /languages                  controllers.LanguageController.index
+GET     /languages/create           controllers.LanguageController.create
+POST    /languages/save             controllers.LanguageController.save
+GET     /languages/edit/:id         controllers.LanguageController.edit(id: Long)
+POST    /languages/update/:id       controllers.LanguageController.update(id: Long)
+GET     /languages/delete/:id       controllers.LanguageController.delete(id: Long)
 
 GET     /auth                       controllers.Auth.index
 POST    /auth/login                 controllers.Auth.login

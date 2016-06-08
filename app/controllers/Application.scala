@@ -5,10 +5,10 @@ import java.io.{File, FileInputStream}
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.google.inject.Inject
 import model._
-import play.api.data.{Form, FormError}
+import play.api.data._
 import play.api.data.Forms._
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{AnyContent, Request, Result, _}
+import play.api.mvc._
 import services.ResourceVersionService
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
@@ -155,24 +155,5 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
         }.getOrElse(BadRequest(views.html.import_(languageForm.fill(language).withError("language", "No file provided."))))
       }
     )
-  }
-}
-
-trait Secured {
-
-  def username(request: RequestHeader) = request.session.get(Security.username)
-
-  def onUnauthorized(request: RequestHeader) = Results.Redirect(routes.Auth.index())
-
-  def withAuth(f: => String => Request[AnyContent] => Result) = {
-    Security.Authenticated(username, onUnauthorized) { user =>
-      Action(request => f(user)(request))
-    }
-  }
-
-  def withUser(f: User => Request[AnyContent] => Result) = withAuth { username => implicit request =>
-    UserRepository.findByUsername(username).map { user =>
-      f(user)(request)
-    }.getOrElse(onUnauthorized(request))
   }
 }

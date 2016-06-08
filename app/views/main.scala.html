@@ -25,6 +25,7 @@
                         <li @if(pageId == "history") { class="current" }><a href="@routes.Application.history()">History</a></li>
                         <li @if(pageId == "export") { class="current" }><a href="@routes.Application.export()">Export</a></li>
                         <li @if(pageId == "import") { class="current" }><a href="@routes.Application.importFile()">Import</a></li>
+                        <li @if(pageId == "languages") { class="current" }><a href="@routes.LanguageController.index()">Lang</a></li>
                         <li @if(pageId == "login") { class="current" }><a href="@routes.Auth.logout()"> @if(pageId == "login") { Login } else { Logout }</a></li>
                     </ul>
                 </div>

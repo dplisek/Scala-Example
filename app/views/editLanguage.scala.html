@@ -1,0 +1,11 @@
+@import model.Language
+@(languageForm: Form[Language], id: Long)(implicit messages: Messages)
+
+@main("Edit a language", "languages") {
+
+    @helper.form(action = routes.LanguageController.update(id)) {
+        @language_form(languageForm)
+        <input type="submit" value="Update"/>
+    }
+
+}

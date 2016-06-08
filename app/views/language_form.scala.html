@@ -1,0 +1,5 @@
+@import model.Language
+@(languageForm: Form[Language])(implicit messages: Messages)
+
+@helper.inputText(languageForm("code"))
+@helper.inputText(languageForm("name"))

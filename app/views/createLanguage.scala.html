@@ -1,0 +1,11 @@
+@import model.Language
+@(languageForm: Form[Language])(implicit messages: Messages)
+
+@main("Create a language", "languages") {
+
+    @helper.form(action = routes.LanguageController.save()) {
+        @language_form(languageForm)
+        <input type="submit" value="Create"/>
+    }
+
+}
