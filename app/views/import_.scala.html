@@ -1,0 +1,17 @@
+@(languageForm: Form[String])(implicit messages: Messages)
+
+@main("Export translations", "import") {
+
+    @helper.form(action = routes.Application.importJson(), 'enctype -> "multipart/form-data") {
+        @helper.inputText(languageForm("language"))
+        <input type="file" name="file" />
+        <input type="submit" value="Import"/>
+        @if(languageForm.hasGlobalErrors) {
+            <ul>
+            @for(error <- languageForm.globalErrors) {
+                <li>@Messages(error.messages, error.args)</li>
+            }
+            </ul>
+        }
+    }
+}

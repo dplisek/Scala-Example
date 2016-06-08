@@ -13,6 +13,8 @@ GET     /history/:version           controllers.Application.selectVersion(versio
 GET     /history/revert_to/:version controllers.Application.revertTo(version: Long)
 GET     /export                     controllers.Application.export()
 POST    /export/json                controllers.Application.exportJson()
+GET     /import                     controllers.Application.importFile()
+POST    /import/json                controllers.Application.importJson()
 
 GET     /auth                       controllers.Auth.index
 POST    /auth/login                 controllers.Auth.login

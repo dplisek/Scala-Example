@@ -1,5 +1,7 @@
 package model
 
+case class TranslationWithoutLanguage(code: String, text: String)
+
 case class Translation(code: String, text: String, language: String)
 
 class TranslationId(val id: Long, val constantId: Long, val resourceVersion: Long, code: String, text: String, language: String) extends Translation(code, text, language) with Cloneable {

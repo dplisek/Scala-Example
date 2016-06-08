@@ -24,4 +24,16 @@ class ResourceVersionService {
       currentVersion
     }
   }
+
+  def createNewVersionWithResourcesFromOtherLanguages(language: String, session: Session) = {
+    this.synchronized {
+      val translations: Iterable[TranslationId] = TranslationRepository.findByResourceVersion(TranslationRepository.findLatestResourceVersion(selectedResourceVersion(session)))
+      val translationsFromOtherLanguages = translations.filter(_.language != language)
+      currentVersion += 1
+      for (translation <- translationsFromOtherLanguages) {
+        TranslationRepository.add(translation.clone(), currentVersion)
+      }
+      currentVersion
+    }
+  }
 }
