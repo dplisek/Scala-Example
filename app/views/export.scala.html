@@ -1,0 +1,10 @@
+@(languageForm: Form[String])(implicit messages: Messages)
+
+@main("Export translations", "export") {
+
+    @helper.form(action = routes.Application.exportJson()) {
+        @helper.inputText(languageForm("language"))
+        <input type="submit" value="Export"/>
+    }
+
+}

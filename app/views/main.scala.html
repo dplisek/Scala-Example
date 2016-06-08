@@ -23,6 +23,7 @@
                         <li @if(pageId == "index" || pageId == "edit") { class="current" }><a href="@routes.Application.index()">List</a></li>
                         <li @if(pageId == "create") { class="current" }><a href="@routes.Application.create()">Create</a></li>
                         <li @if(pageId == "history") { class="current" }><a href="@routes.Application.history()">History</a></li>
+                        <li @if(pageId == "export") { class="current" }><a href="@routes.Application.export()">Export</a></li>
                         <li @if(pageId == "login") { class="current" }><a href="@routes.Auth.logout()"> @if(pageId == "login") { Login } else { Logout }</a></li>
                     </ul>
                 </div>

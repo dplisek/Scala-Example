@@ -7,7 +7,7 @@ import play.api.data.Forms._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{AnyContent, Request, Result, _}
 import services.ResourceVersionService
-import play.api.data.format.Formats._
+import play.api.libs.json._
 
 
 class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionService: ResourceVersionService) extends Controller with I18nSupport with Secured {
@@ -19,6 +19,17 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
       "language" -> nonEmptyText
     ) (Translation.apply) (Translation.unapply)
   )
+
+  val languageForm = Form(
+    "language" -> nonEmptyText
+  )
+
+  implicit val translationWrites = new Writes[Translation] {
+    def writes(translation: Translation) = Json.obj(
+      "code" -> translation.code,
+      "text" -> translation.text
+    )
+  }
 
   def index = withAuth { user => implicit request =>
     val translations = TranslationRepository.findByResourceVersion(TranslationRepository.findLatestResourceVersion(resourceVersionService.selectedResourceVersion(request.session)))
@@ -83,6 +94,21 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
   def revertTo(version: Long) = withAuth { user => implicit request =>
     val newVersion = resourceVersionService.copyCurrentResourcesAsNewVersion(request.session, Option(version))
     Redirect(routes.Application.history()).withSession(resourceVersionService.sessionWithResourceVersion(request.session, newVersion))
+  }
+
+  def export = withAuth { user => implicit request =>
+    Ok(views.html.export(languageForm))
+  }
+
+  def exportJson = withAuth { user => implicit request =>
+    languageForm.bindFromRequest().fold(
+      errors => BadRequest(views.html.export(errors)),
+      language => {
+        val translations = TranslationRepository.findByResourceVersion(TranslationRepository.findLatestResourceVersion(resourceVersionService.selectedResourceVersion(request.session)))
+        val json = Json.toJson(translations.filter(_.language == language))
+        Ok(json).withHeaders("Content-disposition" -> "attachment;filename=translations.json")
+      }
+    )
   }
 }
 
