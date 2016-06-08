@@ -2,12 +2,14 @@ package model
 
 case class TranslationWithoutLanguage(code: String, text: String)
 
-case class Translation(code: String, text: String, language: String)
+case class Translation(code: String, text: String, languageId: Long)
 
-class TranslationId(val id: Long, val constantId: Long, val resourceVersion: Long, code: String, text: String, language: String) extends Translation(code, text, language) with Cloneable {
+case class TranslationWithLanguageName(id: Long, constantId: Long, code: String, text: String, languageName: String)
+
+class TranslationId(val id: Long, val constantId: Long, val resourceVersion: Long, code: String, text: String, languageId: Long) extends Translation(code, text, languageId) with Cloneable {
 
   def this(id: Long, constantId: Long, resourceVersion: Long, translation: Translation) {
-    this(id, constantId, resourceVersion, translation.code, translation.text, translation.language)
+    this(id, constantId, resourceVersion, translation.code, translation.text, translation.languageId)
   }
 
   override def clone(): TranslationId = super.clone().asInstanceOf[TranslationId]
@@ -29,6 +31,8 @@ object TranslationRepository {
   def findByResourceVersion(version: Long) = translations.values.filter(_.resourceVersion == version)
 
   def findByConstantIdAndResourceVersion(constantId: Long, resourceVersion: Long) = translations.values.filter(_.constantId == constantId).find(_.resourceVersion == resourceVersion)
+
+  def findByLanguageId(id: Long) = translations.values.filter(_.languageId == id)
 
   def add(translation: Translation, resourceVersion: Long) = {
     var newTranslation: TranslationId = null

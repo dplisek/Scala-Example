@@ -12,7 +12,7 @@ import play.api.mvc._
 import services.ResourceVersionService
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-
+import play.api.data.format.Formats._
 
 class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionService: ResourceVersionService) extends Controller with I18nSupport with Secured {
 
@@ -20,12 +20,12 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
     mapping(
       "code" -> nonEmptyText,
       "text" -> nonEmptyText,
-      "language" -> nonEmptyText
+      "language" -> of[Long]
     ) (Translation.apply) (Translation.unapply)
   )
 
   val languageForm = Form(
-    "language" -> nonEmptyText
+    "language" -> of[Long]
   )
 
   implicit val translationWrites: Writes[TranslationWithoutLanguage] = (
@@ -40,16 +40,16 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
 
   def index = withAuth { user => implicit request =>
     val translations = TranslationRepository.findByResourceVersion(TranslationRepository.findLatestResourceVersion(resourceVersionService.selectedResourceVersion(request.session)))
-    Ok(views.html.index(translations))
+    Ok(views.html.index(translations.map {t => TranslationWithLanguageName(t.id, t.constantId, t.code, t.text, LanguageRepository.find(t.languageId).get.name)}))
   }
 
   def create = withAuth { user => implicit request =>
-    Ok(views.html.create(translationForm))
+    Ok(views.html.create(translationForm, LanguageRepository.findAll))
   }
 
   def save = withAuth { user => implicit request =>
     translationForm.bindFromRequest.fold(
-      errors => BadRequest(views.html.create(errors)),
+      errors => BadRequest(views.html.create(errors, LanguageRepository.findAll)),
       translation => {
         val newVersion = resourceVersionService.copyCurrentResourcesAsNewVersion(request.session)
         TranslationRepository.add(translation, newVersion)
@@ -60,12 +60,12 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
 
   def edit(id: Long) = withAuth { user => implicit request =>
     val translation = TranslationRepository.find(id)
-    translation.fold(NotFound("Translation not found.")) { t => Ok(views.html.edit(translationForm.fill(t), t.constantId)) }
+    translation.fold(NotFound("Translation not found.")) { t => Ok(views.html.edit(translationForm.fill(t), t.constantId, LanguageRepository.findAll)) }
   }
 
   def update(constantId: Long) = withAuth { user => implicit request =>
     translationForm.bindFromRequest.fold(
-      errors => BadRequest(views.html.edit(errors, constantId)),
+      errors => BadRequest(views.html.edit(errors, constantId, LanguageRepository.findAll)),
       translation => {
         val newVersion = resourceVersionService.copyCurrentResourcesAsNewVersion(request.session)
         val existingTranslation = TranslationRepository.findByConstantIdAndResourceVersion(constantId, newVersion)
@@ -104,27 +104,27 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
   }
 
   def export = withAuth { user => implicit request =>
-    Ok(views.html.export(languageForm))
+    Ok(views.html.export(languageForm, LanguageRepository.findAll))
   }
 
   def exportJson = withAuth { user => implicit request =>
     languageForm.bindFromRequest().fold(
-      errors => BadRequest(views.html.export(errors)),
+      errors => BadRequest(views.html.export(errors, LanguageRepository.findAll)),
       language => {
         val translations = TranslationRepository.findByResourceVersion(TranslationRepository.findLatestResourceVersion(resourceVersionService.selectedResourceVersion(request.session)))
-        val json = Json.toJson(translations.filter(_.language == language).map {translation => TranslationWithoutLanguage(translation.code, translation.text)})
+        val json = Json.toJson(translations.filter(_.languageId == language).map {translation => TranslationWithoutLanguage(translation.code, translation.text)})
         Ok(json).withHeaders("Content-disposition" -> "attachment;filename=translations.json")
       }
     )
   }
 
   def importFile = withAuth( user => implicit request =>
-    Ok(views.html.import_(languageForm))
+    Ok(views.html.import_(languageForm, LanguageRepository.findAll))
   )
 
   def importJson = Action(parse.multipartFormData) { implicit request =>
     languageForm.bindFromRequest().fold(
-      errors => BadRequest(views.html.import_(errors)),
+      errors => BadRequest(views.html.import_(errors, LanguageRepository.findAll)),
       language => {
         request.body.file("file").map { file =>
           val tempFile = file.ref.moveTo(new File("/tmp/file"), replace = true)
@@ -132,8 +132,8 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
           (try {
             Json.parse(stream)
           } catch {
-            case e: JsonMappingException => BadRequest(views.html.import_(languageForm.fill(language).withError("language", "Invalid file")))
-            case _ => BadRequest(views.html.import_(languageForm.fill(language).withError("language", "Something went wrong. Please try again.")))
+            case e: JsonMappingException => BadRequest(views.html.import_(languageForm.fill(language).withError("language", "Invalid file"), LanguageRepository.findAll))
+            case _ => BadRequest(views.html.import_(languageForm.fill(language).withError("language", "Something went wrong. Please try again."), LanguageRepository.findAll))
           } finally {
             stream.close()
           }) match {
@@ -147,12 +147,12 @@ class Application @Inject()(val messagesApi: MessagesApi, val resourceVersionSer
                   }
                   Redirect(routes.Application.index()).withSession(resourceVersionService.sessionWithResourceVersion(request.session, newVersion))
                 }
-                case e: JsError => BadRequest(views.html.import_(languageForm.fill(language).withError("language", e.errors.toString)))
+                case e: JsError => BadRequest(views.html.import_(languageForm.fill(language).withError("language", e.errors.toString), LanguageRepository.findAll))
               }
             }
             case r: Result => r
           }
-        }.getOrElse(BadRequest(views.html.import_(languageForm.fill(language).withError("language", "No file provided."))))
+        }.getOrElse(BadRequest(views.html.import_(languageForm.fill(language).withError("language", "No file provided."), LanguageRepository.findAll)))
       }
     )
   }

@@ -1,5 +1,5 @@
-@import model.TranslationId
-@(translations: Iterable[TranslationId])
+@import model.TranslationWithLanguageName
+@(translations: Iterable[TranslationWithLanguageName])
 
 @main("List of translations", "index") {
 
@@ -18,7 +18,7 @@
                 <tr>
                     <td>@t.code</td>
                     <td>@t.text</td>
-                    <td>@t.language</td>
+                    <td>@t.languageName</td>
                     <td><a href="@routes.Application.edit(t.id)">Edit</a></td>
                     <td><a href="@routes.Application.delete(t.constantId)">Delete</a></td>
                 </tr>

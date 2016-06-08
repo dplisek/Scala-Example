@@ -1,9 +1,10 @@
-@(languageForm: Form[String])(implicit messages: Messages)
+@import model.LanguageId
+@(languageForm: Form[Long], languages: Iterable[LanguageId])(implicit messages: Messages)
 
 @main("Export translations", "export") {
 
     @helper.form(action = routes.Application.exportJson()) {
-        @helper.inputText(languageForm("language"))
+        @helper.select(languageForm("language"), options = languages.map {lang => lang.id.toString -> lang.name }.toSeq)
         <input type="submit" value="Export"/>
     }
 

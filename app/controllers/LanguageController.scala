@@ -53,10 +53,14 @@ class LanguageController @Inject()(val messagesApi: MessagesApi) extends Control
   }
 
   def delete(id: Long) = withAuth { user => implicit request =>
-    val existingLanguage = LanguageRepository.find(id)
-    existingLanguage.fold(BadRequest("Cannot find language to delete.")) { l =>
-      LanguageRepository.delete(l)
-      Redirect(routes.LanguageController.index())
+    if (TranslationRepository.findByLanguageId(id).nonEmpty) {
+      BadRequest("Cannot delete language, it's used in a translation now or sometime in history.")
+    } else {
+      val existingLanguage = LanguageRepository.find(id)
+      existingLanguage.fold(BadRequest("Cannot find language to delete.")) { l =>
+        LanguageRepository.delete(l)
+        Redirect(routes.LanguageController.index())
+      }
     }
   }
 }
